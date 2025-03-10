@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.btn-primary {
+  background: #4361ee;
+}
+
+.btn{
+  padding: 10px 40px;
+  border-radius: 5px;
+  width: fit-content;
+  color: #fff
+}
