@@ -4,20 +4,32 @@ import { Todo } from "../expenses/type";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import apiClient from "../../services/api-client";
 
+interface AddTodoContext {
+  previousTodos: Todo[];
+}
 const GetTodos = () => {
   const queryClient = new QueryClient();
-  const addTodo = useMutation({
+  const addTodo = useMutation<Todo, Error, Todo, AddTodoContext>({
     mutationKey: ["todos", "add"],
     mutationFn: (todo: Todo) =>
       apiClient.post<Todo>("/todos", todo).then((res) => res.data),
-    onSuccess: (savedTodo) => {
-      console.log("savedTodo", savedTodo);
-
+    onMutate: async (newTodo) => {
+      const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]) || [];
       queryClient.setQueryData<Todo[]>(["todos"], (todos) =>
-        todos ? [savedTodo, ...todos] : [savedTodo]
+        todos ? [newTodo, ...todos] : [newTodo]
       );
-      if (todo.current?.value)
-        todo.current.value = "";
+      if (todo.current?.value) todo.current.value = "";
+      return { previousTodos };
+    },
+    onSuccess: (savedTodo, newTodo) => {
+      queryClient.setQueryData<Todo[]>(["todos"], (todos) =>
+        todos?.map((todo) => (todo === newTodo ? savedTodo : todo))
+      );
+    },
+    onError: (error, newTodo, context) => {
+      console.log("error", error);
+      if (!context) return;
+      queryClient.setQueryData<Todo[]>(["todos"], context.previousTodos);
     },
   });
   const todo = useRef<HTMLInputElement>(null);
