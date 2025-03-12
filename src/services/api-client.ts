@@ -8,4 +8,4 @@ export default axios.create({
   // }
 });
 
-export { CanceledError }; 
+export { CanceledError };
